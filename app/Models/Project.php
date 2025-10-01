@@ -15,6 +15,7 @@ class Project extends Model
         'year',
         'type',
         'description',
+        'color',
     ];
 
     // ユーザーとのリレーション

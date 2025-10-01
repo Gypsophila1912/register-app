@@ -19,6 +19,7 @@ class ProjectController extends Controller
             'year' => 'required|digits:4|integer',
             'type' => 'required|in:屋台,展示',
             'description' => 'nullable|string',
+            'color' => 'required|string|regex:/^#[0-9A-Fa-f]{6}$/',
         ]);
 
         // リレーション経由で保存
