@@ -1,5 +1,7 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
+import NavLink from "@/Components/NavLink";
+import { Link } from "@inertiajs/react";
 
 export default function Dashboard({ projects }) {
     return (
@@ -45,11 +47,30 @@ export default function Dashboard({ projects }) {
                                             </p>
 
                                             <div className="mt-4 flex justify-end gap-2">
-                                                <button className="px-3 py-1 border rounded">
-                                                    設定
+                                                <button className="px-3 py-1 border rounded hover:bg-gray-300 transition">
+                                                    <Link
+                                                        href={route(
+                                                            "products.create",
+                                                            {
+                                                                id: project.id,
+                                                            }
+                                                        )}
+                                                    >
+                                                        設定
+                                                    </Link>
                                                 </button>
-                                                <button className="px-3 py-1 bg-blue-500 text-white rounded">
-                                                    プロジェクトを開く
+                                                <button className="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-700 transition">
+                                                    <Link
+                                                        href={route(
+                                                            "project.show",
+                                                            {
+                                                                id: project.id,
+                                                            }
+                                                        )}
+                                                        className="rounded-full px-4 py-2 text-white font-medium"
+                                                    >
+                                                        プロジェクトを開く
+                                                    </Link>
                                                 </button>
                                             </div>
                                         </div>

@@ -2,7 +2,7 @@ import React from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
 
-export default function CreateProject() {
+export default function CreateProject({ project }) {
     return (
         <>
             <AuthenticatedLayout
@@ -18,7 +18,7 @@ export default function CreateProject() {
                     <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
                         <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
                             <div className="p-6 text-gray-900">
-                                プロジェクトページ
+                                {project.name}ページ
                             </div>
                         </div>
                     </div>
