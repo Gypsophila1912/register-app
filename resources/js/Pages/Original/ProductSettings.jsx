@@ -3,6 +3,7 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
 
 export default function CreateProject() {
+    const { flash } = usePage().props;
     return (
         <>
             <AuthenticatedLayout
@@ -13,7 +14,13 @@ export default function CreateProject() {
                 }
             >
                 <Head title="プロジェクト作成" />
-
+                <div>
+                    {flash.success && (
+                        <div className="bg-green-100 text-green-700 p-3 rounded">
+                            {flash.success}
+                        </div>
+                    )}
+                </div>
                 <div className="py-12">
                     <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
                         <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">

@@ -25,7 +25,16 @@ class ProjectController extends Controller
         // リレーション経由で保存
         $request->user()->projects()->create($validated);
 
-        return redirect()->route('dashboard')
-            ->with('success', 'プロジェクトを作成しました！');
+        return redirect()->route('products.create', ['project' => $request->id])
+        ->with('success', 'プロジェクトを作成しました！商品を登録してください。');
+    }
+
+    public function show($id)
+    {
+        $project = auth()->user()->projects()->findOrFail($id);
+
+        return Inertia::render('Original/Project', [
+            'project' => $project,
+        ]);
     }
 }
