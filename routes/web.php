@@ -8,6 +8,8 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\HolderController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\TransactionController;
+
 
 Route::get('/', [DashboardController::class, 'show'])->middleware(['auth', 'verified'])->name('dashboard');
 
@@ -21,9 +23,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/project/store', [ProjectController::class, 'store'])->name('project.store');
     Route::get('/project/{id}', [ProjectController::class, 'show'])->name('project.show');
     // 商品関連
+    Route::get('/projects/{project}/products', [ProductController::class, 'show'])->name('products.show');
     Route::get('/projects/{project}/products/create', [ProductController::class, 'create'])->name('products.create');
     Route::post('/projects/{project}/products', [ProductController::class, 'store'])->name('products.store');
     Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
+    // 会計画面
+    Route::get('/projects/{project}/checkout', [TransactionController::class, 'create'])->name('checkout.create');
+    Route::post('/projects/{project}/checkout', [TransactionController::class, 'store'])->name('checkout.store');
     // 保留者関連
     Route::get('/holder', [HolderController::class, 'show'])->name('holder.show');
 });

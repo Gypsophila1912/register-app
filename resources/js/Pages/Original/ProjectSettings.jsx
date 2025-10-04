@@ -1,7 +1,7 @@
 import React from "react";
 import { useForm } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head, router } from "@inertiajs/react";
+import { Head, router, Link } from "@inertiajs/react";
 
 export default function CreateProject({ auth, project, products }) {
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -25,9 +25,6 @@ export default function CreateProject({ auth, project, products }) {
         }
     };
 
-    const handleFinish = () => {
-        router.visit(route("dashboard"));
-    };
     return (
         <>
             <AuthenticatedLayout
@@ -188,12 +185,16 @@ export default function CreateProject({ auth, project, products }) {
                             </div>
 
                             {/* 完了ボタン */}
-                            <div className="mt-6 flex justify-end">
-                                <button
-                                    onClick={handleFinish}
-                                    className="px-8 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-semibold"
-                                >
-                                    登録完了
+                            <div className="px-5 py-3 mt-6 flex justify-end">
+                                <button>
+                                    <Link
+                                        href={route("products.show", {
+                                            id: project.id,
+                                        })}
+                                        className="px-6 py-2 bg-green-500 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                                    >
+                                        登録完了
+                                    </Link>
                                 </button>
                             </div>
                         </div>

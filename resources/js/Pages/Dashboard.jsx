@@ -1,6 +1,5 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
-import NavLink from "@/Components/NavLink";
 import { Link } from "@inertiajs/react";
 
 export default function Dashboard({ projects }) {
@@ -62,7 +61,7 @@ export default function Dashboard({ projects }) {
                                                 <button className="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-700 transition">
                                                     <Link
                                                         href={route(
-                                                            "project.show",
+                                                            "products.show",
                                                             {
                                                                 id: project.id,
                                                             }
