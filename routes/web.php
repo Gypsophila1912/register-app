@@ -30,7 +30,8 @@ Route::middleware('auth')->group(function () {
     // 会計画面
     Route::post('/projects/{project}/checkout', [TransactionController::class, 'create'])->name('checkout.create');
     Route::post('/projects/{project}/checkout/complete', [TransactionController::class, 'store'])->name('checkout.store');
-    Route::get('/projects/transactions', [TransactionController::class, 'index'])->name('transactions.index');
+    Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index');
+    Route::get('/transactions/{project}', [TransactionController::class, 'show'])->name('transactions.show');
 
     // 保留者関連
     Route::get('/holder', [HolderController::class, 'show'])->name('holder.show');
