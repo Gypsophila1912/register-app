@@ -1,13 +1,54 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head, Link } from "@inertiajs/react";
+import { Head, router, usePage } from "@inertiajs/react";
 
-export default function Show({ auth, project, products }) {
-    const [cart, setCart] = useState([]);
+export default function Create({ auth, project, products }) {
+    const [cart, setCart] = useState(() => {
+        const saved = sessionStorage.getItem(`cart_${project.id}`);
+        return saved ? JSON.parse(saved) : [];
+    });
     const [showQuantityModal, setShowQuantityModal] = useState(false);
     const [showCart, setShowCart] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [quantity, setQuantity] = useState(1);
+    const page = usePage();
+    const flash = page.props.flash || {};
+    const [showFlash, setShowFlash] = useState(false);
+    const [isExiting, setIsExiting] = useState(false);
+
+    useEffect(() => {
+        sessionStorage.setItem(`cart_${project.id}`, JSON.stringify(cart));
+    }, [cart, project.id]);
+
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get("checkout_success") === "true") {
+            setCart([]);
+            sessionStorage.removeItem(`cart_${project.id}`);
+            // URLパラメータをクリーンアップ
+            window.history.replaceState(
+                {},
+                "",
+                route("products.show", project.id)
+            );
+        }
+    }, [project.id]);
+
+    useEffect(() => {
+        if (flash.success || flash.error) {
+            setShowFlash(true);
+            setIsExiting(false);
+
+            const timer = setTimeout(() => {
+                setIsExiting(true);
+                setTimeout(() => {
+                    setShowFlash(false);
+                }, 300); // アニメーション時間
+            }, 3000); // 3秒表示
+
+            return () => clearTimeout(timer);
+        }
+    }, [flash]);
 
     const handleAddToCart = (product) => {
         setSelectedProduct(product);
@@ -45,6 +86,19 @@ export default function Show({ auth, project, products }) {
         return sum + item.product.price * item.quantity;
     }, 0);
 
+    const handleCheckout = () => {
+        const cartData = cart.map((item) => ({
+            product_id: item.product.id,
+            name: item.product.name,
+            price: item.product.price,
+            quantity: item.quantity,
+        }));
+
+        router.post(route("checkout.create", project.id), {
+            cart: cartData,
+            total_amount: totalAmount,
+        });
+    };
     return (
         <AuthenticatedLayout
             user={auth.user}
@@ -55,11 +109,40 @@ export default function Show({ auth, project, products }) {
             }
         >
             <Head title={`${project.name} - 販売`} />
+            <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
+                {/* 成功メッセージ */}
+                {showFlash && flash.success && (
+                    <div
+                        className={`fixed bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 ${
+                            isExiting ? "animate-fade-out" : "animate-fade-in"
+                        }`}
+                    >
+                        <div className="flex items-center gap-2">
+                            <span>✓</span>
+                            <span>{flash.success}</span>
+                        </div>
+                    </div>
+                )}
 
+                {/* エラーメッセージ */}
+                {showFlash && flash.error && (
+                    <div
+                        className={`fixed bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 ${
+                            isExiting ? "animate-fade-out" : "animate-fade-in"
+                        }`}
+                    >
+                        <div className="flex items-center gap-2">
+                            <span>✕</span>
+                            <span>{flash.error}</span>
+                        </div>
+                    </div>
+                )}
+            </div>
             <div className="py-12">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
                     <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
                         <div className="p-6 text-gray-900">
+                            {" "}
                             <div className="flex flex-col md:flex-row">
                                 {/* メインエリア（商品一覧） */}
                                 <div className="flex-1 p-4 md:p-6">
@@ -192,21 +275,14 @@ export default function Show({ auth, project, products }) {
                                         </div>
                                         <button
                                             disabled={cart.length === 0}
+                                            onClick={handleCheckout}
                                             className="w-full py-4 bg-green-600 text-white rounded-lg font-bold text-lg hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition"
                                         >
-                                            <Link
-                                                href={route("checkout.create", {
-                                                    id: project.id,
-                                                })}
-                                                className="rounded-full px-4 py-2 text-white font-medium"
-                                            >
-                                                会計画面へ
-                                            </Link>
+                                            会計画面へ
                                         </button>
                                     </div>
                                 </div>
                             </div>
-
                             {/* モバイル用：カートボタン（固定） */}
                             <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t-2 border-gray-200 p-4 shadow-lg z-40">
                                 <button
@@ -219,7 +295,6 @@ export default function Show({ auth, project, products }) {
                                     </span>
                                 </button>
                             </div>
-
                             {/* モバイル用：カートモーダル */}
                             {showCart && (
                                 <div className="md:hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end">
@@ -312,25 +387,15 @@ export default function Show({ auth, project, products }) {
                                             </div>
                                             <button
                                                 disabled={cart.length === 0}
+                                                onClick={handleCheckout}
                                                 className="w-full py-4 bg-green-600 text-white rounded-lg font-bold text-lg active:scale-95 disabled:bg-gray-300 disabled:cursor-not-allowed transition"
                                             >
-                                                <Link
-                                                    href={route(
-                                                        "checkout.create",
-                                                        {
-                                                            id: project.id,
-                                                        }
-                                                    )}
-                                                    className="rounded-full px-4 py-2 text-white font-medium"
-                                                >
-                                                    会計画面へ
-                                                </Link>
+                                                会計画面へ
                                             </button>
                                         </div>
                                     </div>
                                 </div>
                             )}
-
                             {/* 個数選択モーダル */}
                             {showQuantityModal && (
                                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -428,7 +493,7 @@ export default function Show({ auth, project, products }) {
                         </div>
                     </div>
                 </div>
-            </div>
+            </div>{" "}
         </AuthenticatedLayout>
     );
 }

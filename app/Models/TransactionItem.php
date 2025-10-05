@@ -1,4 +1,3 @@
-// app/Models/TransactionItem.php
 <?php
 
 namespace App\Models;

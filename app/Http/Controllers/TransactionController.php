@@ -11,14 +11,18 @@ use Illuminate\Support\Facades\DB;
 
 class TransactionController extends Controller
 {
+    public function index()
+    {
+        return Inertia::render('Original/Transaction');
+    }
+    
     public function create(Request $request, Project $project)
     {
-        // カート情報を取得（セッションまたはクエリパラメータから）
-        $cartData = $request->input('cart', []);
-        
+        $cart = $request->input('cart', []);
+
         return Inertia::render('Original/Accounting', [
             'project' => $project,
-            'cart' => $cartData,
+            'cart' => $cart,
         ]);
     }
 
@@ -43,7 +47,6 @@ class TransactionController extends Controller
                 'total_amount' => $validated['total_amount'],
                 'received_amount' => $validated['received_amount'],
                 'change_amount' => $validated['change_amount'],
-                'transaction_date' => now(),
             ]);
 
             // 取引明細を作成
@@ -58,7 +61,9 @@ class TransactionController extends Controller
             }
         });
 
-        return redirect()->route('products.show', $project->id)
-            ->with('success', '会計が完了しました！');
+    return redirect()->route('products.show', [
+        'project' => $project->id,
+        'checkout_success' => 'true'  // パラメータ追加
+    ])->with('success', '会計が完了しました！');
     }
 }

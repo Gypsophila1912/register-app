@@ -51,12 +51,14 @@ class ProductController extends Controller
         return back()->with('success', '商品を削除しました。');
     }
 
-    public function show(Project $project)
+    public function show(Project $project, Request $request)
     {
+        $cart = $request->input('cart', []);
         $products = $project->products()->get();
         return Inertia::render('Original/Project', [
             'project' => $project,
             'products' => $products,
+            'cart' => $cart,
         ]);
     }
 }
