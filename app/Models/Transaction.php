@@ -1,4 +1,3 @@
-// app/Models/Transaction.php
 <?php
 
 namespace App\Models;
@@ -13,7 +12,6 @@ class Transaction extends Model
         'total_amount',
         'received_amount',
         'change_amount',
-        'transaction_date',
     ];
 
     protected $casts = [

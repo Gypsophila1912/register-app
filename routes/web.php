@@ -28,10 +28,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/projects/{project}/products', [ProductController::class, 'store'])->name('products.store');
     Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
     // 会計画面
-    Route::get('/projects/{project}/checkout', [TransactionController::class, 'create'])->name('checkout.create');
-    Route::post('/projects/{project}/checkout', [TransactionController::class, 'store'])->name('checkout.store');
+    Route::post('/projects/{project}/checkout', [TransactionController::class, 'create'])->name('checkout.create');
+    Route::post('/projects/{project}/checkout/complete', [TransactionController::class, 'store'])->name('checkout.store');
+    Route::get('/projects/transactions', [TransactionController::class, 'index'])->name('transactions.index');
+
     // 保留者関連
     Route::get('/holder', [HolderController::class, 'show'])->name('holder.show');
+
 });
 
 require __DIR__.'/auth.php';

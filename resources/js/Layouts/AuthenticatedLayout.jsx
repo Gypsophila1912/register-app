@@ -30,6 +30,14 @@ export default function AuthenticatedLayout({ header, children }) {
                                 >
                                     保留者リスト
                                 </NavLink>
+                                <NavLink
+                                    href={route("transactions.index")}
+                                    active={route().current(
+                                        "transactions.index"
+                                    )}
+                                >
+                                    取引一覧
+                                </NavLink>
                             </div>
                         </div>
 
