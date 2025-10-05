@@ -13,7 +13,56 @@ class TransactionController extends Controller
 {
     public function index()
     {
-        return Inertia::render('Original/Transaction');
+        // プロジェクトごとに取引をグループ化して集計
+        $projectTransactions = Project::with('transactions')
+            ->get()
+            ->map(function ($project) {
+                $transactions = $project->transactions;
+                
+                return [
+                    'project' => [
+                        'id' => $project->id,
+                        'name' => $project->name,
+                        'color' => $project->color,
+                    ],
+                    'transaction_count' => $transactions->count(),
+                    'total_sales' => $transactions->sum('total_amount'),
+                    'total_received' => $transactions->sum('received_amount'),
+                    'total_change' => $transactions->sum('change_amount'),
+                    'last_transaction_date' => $transactions->max('created_at'),
+                ];
+            })
+            ->filter(function ($projectData) {
+                // 取引があるプロジェクトのみ表示
+                return $projectData['transaction_count'] > 0;
+            })
+            ->sortByDesc('last_transaction_date')
+            ->values();
+
+        return Inertia::render('Original/Transaction', [
+            'projectTransactions' => $projectTransactions,
+        ]);
+    }
+
+    /**
+     * 特定プロジェクトの取引履歴詳細を表示
+     */
+    public function show(Project $project)
+    {
+        // プロジェクトの取引履歴を取得（新しい順）
+        $transactions = Transaction::with(['items', 'user'])
+            ->where('project_id', $project->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return Inertia::render('Original/TransactionHistory', [
+            'project' => [
+                'id' => $project->id,
+                'name' => $project->name,
+                'color' => $project->color,
+            ],
+            'transactions' => $transactions,
+        ]);
     }
     
     public function create(Request $request, Project $project)
