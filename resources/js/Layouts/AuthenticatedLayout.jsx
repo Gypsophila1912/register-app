@@ -24,12 +24,23 @@ export default function AuthenticatedLayout({ header, children }) {
                             </div>
 
                             <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                                <NavLink
-                                    href={route("holder.show")}
-                                    active={route().current("Holder.show")}
-                                >
-                                    保留者リスト
-                                </NavLink>
+                                {/* プロジェクトページにいる場合のみ表示 */}
+                                {route().params.project && (
+                                    <>
+                                        <NavLink
+                                            href={route(
+                                                "holder.show",
+                                                route().params.project
+                                            )}
+                                            active={route().current(
+                                                "holder.show"
+                                            )}
+                                        >
+                                            保留者リスト
+                                        </NavLink>
+                                    </>
+                                )}
+
                                 <NavLink
                                     href={route("transactions.index")}
                                     active={route().current(

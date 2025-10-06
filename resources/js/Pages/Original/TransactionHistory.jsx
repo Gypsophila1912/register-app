@@ -10,7 +10,7 @@ export default function TransactionHistory({ auth, project, transactions }) {
     };
 
     const totalSales = transactions.reduce(
-        (sum, transaction) => sum + transaction.total_amount,
+        (sum, transaction) => sum + transaction.final_amount,
         0
     );
 
