@@ -17,7 +17,7 @@ class TransactionController extends Controller
         $projectTransactions = Project::with('transactions')
             ->get()
             ->map(function ($project) {
-                $transactions = $project->transactions;
+                $transactions = $project->transactions->where('status', '完了');
                 
                 return [
                     'project' => [
@@ -26,14 +26,14 @@ class TransactionController extends Controller
                         'color' => $project->color,
                     ],
                     'transaction_count' => $transactions->count(),
-                    'total_sales' => $transactions->sum('total_amount'),
+                    'total_sales' => $transactions->sum('final_amount'),
+                    'total_discount' => $transactions->sum('discount_amount'),
                     'total_received' => $transactions->sum('received_amount'),
                     'total_change' => $transactions->sum('change_amount'),
                     'last_transaction_date' => $transactions->max('created_at'),
                 ];
             })
             ->filter(function ($projectData) {
-                // 取引があるプロジェクトのみ表示
                 return $projectData['transaction_count'] > 0;
             })
             ->sortByDesc('last_transaction_date')
@@ -52,6 +52,7 @@ class TransactionController extends Controller
         // プロジェクトの取引履歴を取得（新しい順）
         $transactions = Transaction::with(['items', 'user'])
             ->where('project_id', $project->id)
+            ->where('status', '完了')
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -75,40 +76,48 @@ class TransactionController extends Controller
         ]);
     }
 
-    public function store(Request $request, Project $project)
-    {
-        $validated = $request->validate([
-            'total_amount' => 'required|integer|min:0',
-            'received_amount' => 'required|integer|min:0',
-            'change_amount' => 'required|integer|min:0',
-            'items' => 'required|array',
-            'items.*.product_id' => 'required|exists:products,id',
-            'items.*.quantity' => 'required|integer|min:1',
-            'items.*.price' => 'required|integer|min:0',
-            'items.*.name' => 'required|string',
+public function store(Request $request, Project $project)
+{
+    $validated = $request->validate([
+        'total_amount' => 'required|integer|min:0',
+        'discount_amount' => 'nullable|integer|min:0',
+        'final_amount' => 'required|integer|min:0',
+        'received_amount' => 'required|integer|min:0',
+        'change_amount' => 'required|integer|min:0',
+        'coupon_count' => 'nullable|integer|min:0',
+        'status' => 'nullable|string|in:完了,保留,キャンセル',
+        'items' => 'required|array',
+        'items.*.product_id' => 'required|exists:products,id',
+        'items.*.quantity' => 'required|integer|min:1',
+        'items.*.price' => 'required|integer|min:0',
+        'items.*.name' => 'required|string',
+    ]);
+
+    DB::transaction(function () use ($validated, $project, $request) {
+        // 取引を作成
+        $transaction = Transaction::create([
+            'project_id' => $project->id,
+            'user_id' => auth()->id(),
+            'total_amount' => $validated['total_amount'],
+            'discount_amount' => $validated['discount_amount'] ?? 0,
+            'final_amount' => $validated['final_amount'],
+            'received_amount' => $validated['received_amount'],
+            'change_amount' => $validated['change_amount'],
+            'coupon_count' => $validated['coupon_count'] ?? 0,
+            'status' => $validated['status'] ?? '完了',
         ]);
 
-        DB::transaction(function () use ($validated, $project, $request) {
-            // 取引を作成
-            $transaction = Transaction::create([
-                'project_id' => $project->id,
-                'user_id' => auth()->id(),
-                'total_amount' => $validated['total_amount'],
-                'received_amount' => $validated['received_amount'],
-                'change_amount' => $validated['change_amount'],
+        // 取引明細を作成
+        foreach ($validated['items'] as $item) {
+            $transaction->items()->create([
+                'product_id' => $item['product_id'],
+                'product_name' => $item['name'],
+                'product_price' => $item['price'],
+                'quantity' => $item['quantity'],
+                'subtotal' => $item['price'] * $item['quantity'],
             ]);
-
-            // 取引明細を作成
-            foreach ($validated['items'] as $item) {
-                $transaction->items()->create([
-                    'product_id' => $item['product_id'],
-                    'product_name' => $item['name'],
-                    'product_price' => $item['price'],
-                    'quantity' => $item['quantity'],
-                    'subtotal' => $item['price'] * $item['quantity'],
-                ]);
-            }
-        });
+        }
+    });
 
     return redirect()->route('products.show', [
         'project' => $project->id,

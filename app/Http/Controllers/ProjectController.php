@@ -23,9 +23,9 @@ class ProjectController extends Controller
         ]);
 
         // リレーション経由で保存
-        $request->user()->projects()->create($validated);
+        $project = $request->user()->projects()->create($validated);
 
-        return redirect()->route('products.create', ['project' => $request->id])
+        return redirect()->route('products.create', ['project' => $project->id])
         ->with('success', 'プロジェクトを作成しました！商品を登録してください。');
     }
 

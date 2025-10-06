@@ -34,7 +34,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/transactions/{project}', [TransactionController::class, 'show'])->name('transactions.show');
 
     // 保留者関連
-    Route::get('/holder', [HolderController::class, 'show'])->name('holder.show');
+    Route::get('/projects/{project}/holder', [HolderController::class, 'show'])->name('holder.show');
+    Route::post('/projects/{project}/Holder/{transaction}/complete', [HolderController::class, 'complete'])->name('holder.complete');
+    
+    // 保留取引のキャンセル
+    Route::post('/projects/{project}/Holder/{transaction}/cancel', [HolderController::class, 'cancel'])->name('holder.cancel');
+
 
 });
 
